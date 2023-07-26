@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sd_payaneh_import_import_wizard_admins,sd_payaneh_import.import.wizard,model_sd_payaneh_import_import_wizard,base.group_system,1,1,1,1
+access_sd_payaneh_import_data_admins,sd_payaneh_import.data,model_sd_payaneh_import_data,base.group_system,1,1,1,1
+access_sd_payaneh_import_registration_admins,sd_payaneh_import.registration,model_sd_payaneh_import_registration,base.group_system,1,1,1,1
+access_sd_payaneh_import_input_admins,sd_payaneh_import.input,model_sd_payaneh_import_input,base.group_system,1,1,1,1

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sd_payaneh_nafti_input_infos_list_inherit" model="ir.ui.view">
+        <field name="name">sd_payaneh_nafti.input_info.list</field>
+        <field name="model">sd_payaneh_nafti.input_info</field>
+        <field name="inherit_id" ref="sd_payaneh_nafti.sd_payaneh_nafti_input_infos_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                    <header>
+<!--                        <button name="records_statistics" string="Statistics" type="object" class="btn btn-success mx-1"/>-->
+                        <button name="process_records" string="Process Records" type="object" class="btn btn-info mx-1"/>
+<!--                        <button name="process_actions" string="Process Actions" type="object" class="btn btn-warning mx-1"/>-->
+                    </header>
+            </xpath>
+        </field>
+    </record>
+
+<!--    <record id="hr_view_employee_form_inherit_sd_employee" model="ir.ui.view">-->
+<!--        <field name="name">hr.employee.form</field>-->
+<!--        <field name="model">hr.employee</field>-->
+<!--        <field name="inherit_id" ref="hr.view_employee_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='user_id']" position="after">-->
+<!--                    <field name="phone_list_top"/>-->
+<!--                </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+</odoo>

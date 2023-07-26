@@ -1,0 +1,24 @@
+.hse_incident_report_dir{
+    direction: ltr !important;
+}
+.hse_incident_report th, .hse_incident_report td  {
+    padding: 0px !important;
+    text-align: center;
+    font-size: .7em;
+}
+.hse_incident_report th:nth-child(3), .hse_incident_report th:nth-child(4),.hse_incident_report th:nth-child(5){
+    color: #aa1010;
+}
+.hse_incident_report_name{
+    font-size: .7em;
+    font-weight: bold;
+    padding: 2px;
+}
+.hse_reports th, .hse_reports td  {
+    padding: 0px !important;
+    text-align: center;
+    font-size: .7em;
+}
+.hse_reports th{
+    color: #343a40;
+}

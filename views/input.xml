@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="sd_payaneh_import_input_form" model="ir.ui.view">
+            <field name="name">sd_payaneh_import.input</field>
+            <field name="model">sd_payaneh_import.input</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom" multi_edit="1">
+                    <header>
+<!--                        <button name="records_statistics" string="Statistics" type="object" class="btn btn-success mx-1"/>-->
+                        <button name="process_records" string="Process Records" type="object" class="btn btn-info mx-1"/>
+<!--                        <button name="process_actions" string="Process Actions" type="object" class="btn btn-warning mx-1"/>-->
+                    </header>
+                    <field name="active" invisible="1" />
+                    <field name="document_no"  />
+                    <field name="description"  />
+                    <field name="loading_no"  />
+                    <field name="loading_date"  />
+                    <field name="registration_no"  />
+                    <field name="buyer"  />
+                    <field name="contractor"  />
+                    <field name="driver"  />
+                    <field name="card_no"  />
+                    <field name="plate_1"  />
+                    <field name="plate_2"  />
+                    <field name="plate_3"  />
+                    <field name="plate_4"  />
+                    <field name="front_container"  />
+                    <field name="middle_container"  />
+                    <field name="back_container"  />
+                    <field name="centralized_container"  />
+                    <field name="sp_gr"  />
+                    <field name="temperature"  />
+                    <field name="pressure"  />
+                    <field name="miter_no"  />
+                    <field name="totalizer_start"  />
+                    <field name="totalizer_end"  />
+                    <field name="totalizer_difference"  />
+                    <field name="weighbridge"  />
+                    <field name="tanker_empty_weight"  />
+                    <field name="tanker_full_weight"  />
+                    <field name="tanker_pure_weight"  />
+                    <field name="evacuation_box_seal"  />
+                    <field name="compartment_1"  />
+                    <field name="compartment_2"  />
+                    <field name="compartment_3"  />
+                    <field name="correction_factor"  />
+                    <field name="rec_api"  />
+                    <field name="temperature_f"  />
+                    <field name="pressure_psi"  />
+                    <field name="ctl"  />
+                    <field name="cpl"  />
+                    <field name="tab_13"  />
+                    <field name="meter_tov_l"  />
+                    <field name="meter_gsv_l"  />
+                    <field name="meter_gsv_b"  />
+                    <field name="meter_mt"  />
+                    <field name="wb_tov_l"  />
+                    <field name="wb_gsv_l"  />
+                    <field name="wb_gsv_b"  />
+                    <field name="wb_mt"  />
+                    <field name="final_tov_l"  />
+                    <field name="final_gsv_l"  />
+                    <field name="final_gsv_b"  />
+                    <field name="final_mt"  />
+
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="sd_payaneh_import_input_search" model="ir.ui.view">
+            <field name="name">sd_payaneh_import.input</field>
+            <field name="model">sd_payaneh_import.input</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <record id="sd_payaneh_import_input_wizard_action" model="ir.actions.act_window">
+            <field name="name">Input Import</field>
+            <field name="res_model">sd_payaneh_import.input</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+
+        <menuitem name="Input List"
+                  sequence="21"
+                  id="sd_payaneh_import_input_menu"
+                  parent="sd_payaneh_import.import_menu"
+                  groups="base.group_system"
+                  action="sd_payaneh_import_input_wizard_action"/>
+    </data>
+</odoo>
+
