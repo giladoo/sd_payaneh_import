@@ -1,7 +1,7 @@
-HSE Management
+Payaneh Nafti Import Module
 ===============================================
-This application can help HSE managers in a construction project company.
-It can help to gather hse data from multi construction sites.
+This module is a complimentary for sd_payaneh_nafti to import data from the excel file.
+sd_payaneh_nafti is a module to manage oil terminal.
 
 Features:
 ---------------------
@@ -11,12 +11,11 @@ Installation:
 --------------
 **Requirements:**
     * odoo version 15.0
-    * sd module; it is the core of the sd_hse
 
 **Dependencies:**
     * `base`
-    * `website`
-    * `sd`
+    * `web`
+    * `sd_payaneh_nafti`
 
 Settings:
 --------------
