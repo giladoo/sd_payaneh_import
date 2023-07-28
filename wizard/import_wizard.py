@@ -150,7 +150,7 @@ class SdPayanehImportImportWizard(models.TransientModel):
                                                        'pressure': excel_data.iloc[index][21] if str(excel_data.iloc[index][21]) != 'nan' else '',
 
                                                        'weighbridge': excel_data.iloc[index][23] if str(excel_data.iloc[index][23]) != 'nan' else '',
-                                                       'miter_no': excel_data.iloc[index][24] if str(excel_data.iloc[index][24]) != 'nan' else '',
+                                                       'meter_no': excel_data.iloc[index][24] if str(excel_data.iloc[index][24]) != 'nan' else '',
                                                        'totalizer_start': excel_data.iloc[index][25] if str(excel_data.iloc[index][25]) != 'nan' else '',
                                                        'totalizer_end': excel_data.iloc[index][26] if str(excel_data.iloc[index][26]) != 'nan' else '',
                                                        'totalizer_difference': excel_data.iloc[index][27] if str(excel_data.iloc[index][27]) != 'nan' else '',

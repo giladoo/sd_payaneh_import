@@ -32,7 +32,7 @@ class SdPaynehImpoertInput(models.Model):
     sp_gr = fields.Char()
     temperature = fields.Char()
     pressure = fields.Char()
-    miter_no = fields.Char()
+    meter_no = fields.Char()
     totalizer_start = fields.Char()
     totalizer_end = fields.Char()
     totalizer_difference = fields.Char()
@@ -137,7 +137,7 @@ class SdPaynehImpoertInput(models.Model):
                                            'sp_gr': data.sp_gr,
                                            'temperature': int(float(data.temperature)) if data.temperature.isdigit() else False,
                                            'pressure': data.pressure,
-                                           'miter_no': data.miter_no,
+                                           'meter_no': data.meter_no,
                                            'totalizer_start': data.totalizer_start,
                                            'totalizer_end': data.totalizer_end,
                                            'weighbridge': 'no' if data.weighbridge == 'خیر' else 'yes',

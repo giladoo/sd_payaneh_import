@@ -32,7 +32,7 @@
                     <field name="sp_gr"  />
                     <field name="temperature"  />
                     <field name="pressure"  />
-                    <field name="miter_no"  />
+                    <field name="meter_no"  />
                     <field name="totalizer_start"  />
                     <field name="totalizer_end"  />
                     <field name="totalizer_difference"  />
