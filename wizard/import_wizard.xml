@@ -43,11 +43,23 @@
 
                     </group>
 
+                    <group>
+                        <group >
+<!--                            <field name="start_date" />-->
+<!--                            <field name="calendar" invisible="context.get('lang') != 'fa_IR'"/>-->
+                            <label for="month" string="Month"/>
+                            <div class="o_row">
+                                <field name="month" class="col col-lg-5" />
+                                <field name="year" class="col col-lg-4"/>
+                            </div>
+                        </group>
+
+                    </group>
 
                     <footer>
                         <button string="Process" name="hse_test_import"  type="object" class="btn btn-primary"/>
-                        <button string="Close" name="hse_close"  type="object" class="btn btn-secondary"/>
-<!--                        <button string="Close" special="cancel" class="btn-secondary"/>-->
+<!--                        <button string="Close" name="hse_close"  type="object" class="btn btn-secondary"/>-->
+                        <button string="Cancel" special="cancel" class="btn-secondary"/>
                     </footer>
 
                 </form>

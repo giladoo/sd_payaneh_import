@@ -15,12 +15,13 @@ import openpyxl
 import io
 # from tabulate import tabulate
 # from prettytable import PrettyTable
+from . import get_calendare as gc
 
 
 # #############################################################################
 class SdPayanehImportImportWizard(models.TransientModel):
     _name = 'sd_payaneh_import.import.wizard'
-    _description = 'HSE Database Import Wizard'
+    _description = 'Database Import Wizard'
 
     data_type = fields.Selection(selection=[('ثبت قرارداد', 'ثبت قرارداد'),
                                             ('اطلاعات ورودی ', 'اطلاعات ورودی '),], string='Data Type', default='اطلاعات ورودی ')
@@ -38,14 +39,23 @@ class SdPayanehImportImportWizard(models.TransientModel):
     calendar = fields.Selection([('fa_IR', 'Persian'), ('en_US', 'Gregorian')],
                                 default=lambda self: 'fa_IR' if self.env.context.get('lang') == 'fa_IR' else 'en_US')
 
+    month = fields.Selection(lambda self: gc.get_months_pr() if self.env.context.get('lang') == 'fa_IR' else gc.get_months(),
+                             string='Month', required=True,
+                             default=lambda self: self._month_selector())
+    year = fields.Selection(lambda self: gc.get_years_pr() if self.env.context.get('lang') == 'fa_IR' else gc.get_years(),
+                            string='Year', required=True,
+                            default=lambda self: self._year_selector())
     @api.onchange('excel_file', 'data_type')
     def _start_row(self):
-        if self.excel_file:
-            if self.excel_file and self.excel_file_name and (self.excel_file_name.split('.')[-1]).lower() in ['xlsx', 'xlsm']:
-                excel_file = base64.b64decode(self.excel_file)
-                excel_data = pd.read_excel(excel_file, sheet_name=self.data_type)
-                self.end_row = excel_data.index.stop + 1
-                self.excel_file_rows = excel_data.index.stop
+        try:
+            if self.excel_file:
+                if self.excel_file and self.excel_file_name and (self.excel_file_name.split('.')[-1]).lower() in ['xlsx', 'xlsm']:
+                    excel_file = base64.b64decode(self.excel_file)
+                    excel_data = pd.read_excel(excel_file, sheet_name=self.data_type)
+                    self.end_row = excel_data.index.stop + 1
+                    self.excel_file_rows = excel_data.index.stop
+        except Exception as e:
+            raise ValidationError(_(e))
 
     @api.onchange('start_row', 'end_row')
     def _row_changed(self):
@@ -99,21 +109,21 @@ class SdPayanehImportImportWizard(models.TransientModel):
                             registration_model.create({'registration_no': excel_data.iloc[index][0] if str(excel_data.iloc[index][0]) != 'nan' else '',
                                                         'letter_no': excel_data.iloc[index][1] if str(excel_data.iloc[index][1]) != 'nan' else '',
                                                         'contract_no': excel_data.iloc[index][2] if str(excel_data.iloc[index][2]) != 'nan' else '',
-                                                        'bill_of_lading': excel_data.iloc[index][3] if str(excel_data.iloc[index][3]) != 'nan' else '',
-                                                        'buyer': excel_data.iloc[index][4] if str(excel_data.iloc[index][4]) != 'nan' else '',
+                                                        'order_no': excel_data.iloc[index][3] if str(excel_data.iloc[index][3]) != 'nan' else '',
+                                                        'buyer': excel_data.iloc[index][4].strip() if str(excel_data.iloc[index][4]) != 'nan' else '',
                                                         'amount': excel_data.iloc[index][5] if str(excel_data.iloc[index][5]) != 'nan' else '',
                                                         'unit': excel_data.iloc[index][6] if str(excel_data.iloc[index][6]) != 'nan' else '',
                                                         'contract_type': excel_data.iloc[index][7] if str(excel_data.iloc[index][7]) != 'nan' else '',
                                                         'loading_type': excel_data.iloc[index][8] if str(excel_data.iloc[index][8]) != 'nan' else '',
                                                         'start_date': excel_data.iloc[index][9] if str(excel_data.iloc[index][9]) != 'nan' else '',
                                                         'end_date': excel_data.iloc[index][10] if str(excel_data.iloc[index][10]) != 'nan' else '',
-                                                        'destination': excel_data.iloc[index][11] if str(excel_data.iloc[index][11]) != 'nan' else '',
+                                                        'destination': excel_data.iloc[index][11].strip() if str(excel_data.iloc[index][11]) != 'nan' else '',
 
-                                                        'contractor1': excel_data.iloc[index][13] if str(excel_data.iloc[index][13]) != 'nan' else '',
-                                                        'contractor2': excel_data.iloc[index][14] if str(excel_data.iloc[index][14]) != 'nan' else '',
-                                                        'contractor3': excel_data.iloc[index][15] if str(excel_data.iloc[index][15]) != 'nan' else '',
-                                                        'contractor4': excel_data.iloc[index][16] if str(excel_data.iloc[index][16]) != 'nan' else '',
-                                                        'contractor5': excel_data.iloc[index][17] if str(excel_data.iloc[index][17]) != 'nan' else '',
+                                                        'contractor1': excel_data.iloc[index][13].strip() if str(excel_data.iloc[index][13]) != 'nan' else '',
+                                                        'contractor2': excel_data.iloc[index][14].strip() if str(excel_data.iloc[index][14]) != 'nan' else '',
+                                                        'contractor3': excel_data.iloc[index][15].strip() if str(excel_data.iloc[index][15]) != 'nan' else '',
+                                                        'contractor4': excel_data.iloc[index][16].strip() if str(excel_data.iloc[index][16]) != 'nan' else '',
+                                                        'contractor5': excel_data.iloc[index][17].strip() if str(excel_data.iloc[index][17]) != 'nan' else '',
 
                                                         'first_extend_no': excel_data.iloc[index][18] if str(excel_data.iloc[index][18]) != 'nan' else '',
                                                         'first_extend_star_date': excel_data.iloc[index][19] if str(excel_data.iloc[index][19]) != 'nan' else '',
@@ -131,9 +141,9 @@ class SdPayanehImportImportWizard(models.TransientModel):
                                                        'loading_no': excel_data.iloc[index][2] if str(excel_data.iloc[index][2]) != 'nan' else '',
                                                        'loading_date': excel_data.iloc[index][3] if str(excel_data.iloc[index][3]) != 'nan' else '',
                                                        'registration_no': excel_data.iloc[index][4] if str(excel_data.iloc[index][4]) != 'nan' else '',
-                                                       'contractor': excel_data.iloc[index][5] if str(excel_data.iloc[index][5]) != 'nan' else '',
-                                                       'buyer': excel_data.iloc[index][6] if str(excel_data.iloc[index][6]) != 'nan' else '',
-                                                       'driver': excel_data.iloc[index][7] if str(excel_data.iloc[index][7]) != 'nan' else '',
+                                                       'contractor': excel_data.iloc[index][5].strip() if str(excel_data.iloc[index][5]) != 'nan' else '',
+                                                       'buyer': excel_data.iloc[index][6].strip() if str(excel_data.iloc[index][6]) != 'nan' else '',
+                                                       'driver': excel_data.iloc[index][7].strip() if str(excel_data.iloc[index][7]) != 'nan' else '',
                                                        'card_no': excel_data.iloc[index][8] if str(excel_data.iloc[index][8]) != 'nan' else '',
                                                        'plate_1': excel_data.iloc[index][9] if str(excel_data.iloc[index][9]) != 'nan' else '',
                                                        'plate_2': excel_data.iloc[index][10] if str(excel_data.iloc[index][10]) != 'nan' else '',
@@ -180,6 +190,8 @@ class SdPayanehImportImportWizard(models.TransientModel):
                                                        'final_gsv_l': excel_data.iloc[index][51] if str(excel_data.iloc[index][51]) != 'nan' else '',
                                                        'final_gsv_b': excel_data.iloc[index][52] if str(excel_data.iloc[index][52]) != 'nan' else '',
                                                        'final_mt': excel_data.iloc[index][53] if str(excel_data.iloc[index][53]) != 'nan' else '',
+                                                       'jyear': int(self.year),
+                                                        'jmonth': int(self.month),
                                                        })
 
                 except Exception as e:
@@ -207,3 +219,20 @@ class SdPayanehImportImportWizard(models.TransientModel):
 
     def hse_close(self):
         return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def _year_selector(self):
+        # todo: timezone is needed to make sure date after 8 pm is correct
+        this_date = datetime.now()
+        if self.env.context.get('lang') == 'fa_IR':
+            s_this_year = jdatetime.date.fromgregorian(date=this_date).strftime("%Y")
+        else:
+            s_this_year = this_date.strftime("%Y")
+        return s_this_year
+    def _month_selector(self):
+        # todo: timezone is needed to make sure date after 8 pm is correct
+        this_date = datetime.now()
+        if self.env.context.get('lang') == 'fa_IR':
+            s_this_month = jdatetime.date.fromgregorian(date=this_date).strftime("%m")
+        else:
+            s_this_month = this_date.strftime("%m")
+        return s_this_month

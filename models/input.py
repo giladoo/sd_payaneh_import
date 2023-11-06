@@ -18,6 +18,7 @@ class SdPaynehImpoertInput(models.Model):
     buyer = fields.Char()
     contractor = fields.Char()
     driver = fields.Char()
+    driver_m = fields.Many2one('sd_payaneh_nafti.drivers')
     card_no = fields.Char()
     plate_1 = fields.Char()
     plate_2 = fields.Char()
@@ -64,22 +65,36 @@ class SdPaynehImpoertInput(models.Model):
     final_gsv_b = fields.Char()
     final_mt = fields.Char()
     description = fields.Char()
+    jyear = fields.Integer()
+    jmonth = fields.Integer()
 
+    def process_drivers(self):
+        active_ids = self.env.context.get('active_ids')
+        records = self.browse(active_ids)
+        drivers_model = self.env['sd_payaneh_nafti.drivers']
+        for rec in records:
+            if not drivers_model.search([('name', '=', rec.driver)]):
+                drivers_model.create({'name': rec.driver})
+            drivers = drivers_model.search([('name', '=', rec.driver)])
+            if len(drivers) == 1:
+                rec.write({'driver_m': drivers.id})
 
     def process_records(self):
         active_ids = self.env.context.get('active_ids')
         print(f'\n {active_ids}')
-        jyear = 1402
-        jmonth = 4
+        # jyear = 1402
+        # jmonth = 4
         data_model = self.browse(active_ids)
         payaneh_data_model = self.env['sd_payaneh_nafti.input_info']
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
         payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
         payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+        payaneh_drivers_model = self.env['sd_payaneh_nafti.drivers'].search([])
         payaneh_registration_model = self.env['sd_payaneh_nafti.contract_registration'].search([])
         buyers = [(b.name, b.id) for b in payaneh_buyers_model]
         destinations = [(d.name, d.id) for d in payaneh_destinations_model]
         contractors = [(c.name, c.id) for c in payaneh_contractors_model]
+        drivers = [(c.name, c.id) for c in payaneh_drivers_model]
         registrations = [(reg.registration_no, reg.id) for reg in payaneh_registration_model]
         for data in data_model:
             try:
@@ -88,7 +103,7 @@ class SdPaynehImpoertInput(models.Model):
                     continue
 
                 if data.loading_date.isdigit():
-                    loading_date = jdatetime.date(jyear, jmonth, int(data.loading_date)).togregorian()
+                    loading_date = jdatetime.date(data.jyear, data.jmonth, int(data.loading_date)).togregorian()
                 else:
                     data.write({'description': f'loading_date is not a number: [{data.loading_date}]'})
                     continue
@@ -109,10 +124,18 @@ class SdPaynehImpoertInput(models.Model):
 
                 contractor = list(filter(lambda d: d[0] == data.contractor, contractors))
                 if len(contractor) == 0:
-                    data.write({'description': _(f'There is no destination found\n {contractor}')})
+                    data.write({'description': _(f'There is no contractor found\n {contractor}')})
                     continue
                 elif len(contractor) > 1:
-                    data.write({'description': _(f'There are multiple destinations found \n {contractor}')})
+                    data.write({'description': _(f'There are multiple contractor found \n {contractor}')})
+                    continue
+
+                driver = list(filter(lambda d: d[0] == data.driver, drivers))
+                if len(driver) == 0:
+                    data.write({'description': _(f'There is no driver found\n {driver}')})
+                    continue
+                elif len(driver) > 1:
+                    data.write({'description': _(f'There are multiple driver found \n {driver}')})
                     continue
                 # save new record
             except Exception as e:
@@ -124,7 +147,7 @@ class SdPaynehImpoertInput(models.Model):
                                            'loading_date': loading_date,
                                            'registration_no': registration[0][1],
                                            'contractor': contractor[0][1],
-                                           'driver': data.driver,
+                                           'driver': driver[0][1],
                                            'card_no': data.card_no,
                                            'plate_1': data.plate_1.split('.')[0],
                                            'plate_2': data.plate_2.split('.')[0],

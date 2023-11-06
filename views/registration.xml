@@ -7,8 +7,10 @@
             <field name="arch" type="xml">
                 <tree editable="bottom" multi_edit="1">
                     <header>
-<!--                        <button name="records_statistics" string="Statistics" type="object" class="btn btn-success mx-1"/>-->
-                        <button name="process_records" string="Process Records" type="object" class="btn btn-info mx-1"/>
+                        <button name="process_buyers" string="Buyers" type="object" class="btn btn-success mx-1"/>
+                        <button name="process_contractors" string="Contractors" type="object" class="btn btn-success mx-1"/>
+                        <button name="process_destinations" string="Destinations" type="object" class="btn btn-success mx-1"/>
+                        <button name="process_registrations" string="Registrations" type="object" class="btn btn-info mx-1"/>
 <!--                        <button name="process_actions" string="Process Actions" type="object" class="btn btn-warning mx-1"/>-->
                     </header>
                     <field name="active" invisible="1" />
@@ -16,7 +18,7 @@
                     <field name="description"  />
                     <field name="letter_no"  />
                     <field name="contract_no"  />
-                    <field name="bill_of_lading"  />
+                    <field name="order_no"  />
                     <field name="buyer"  />
                     <field name="amount"  />
                     <field name="unit"  />
@@ -24,18 +26,18 @@
                     <field name="loading_type"  />
                     <field name="start_date"  />
                     <field name="end_date"  />
-                    <field name="destination"  />
-                    <field name="contractor1"  />
-                    <field name="contractor2"  />
-                    <field name="contractor3"  />
-                    <field name="contractor4"  />
-                    <field name="contractor5"  />
-                    <field name="first_extend_no"  />
-                    <field name="first_extend_star_date"  />
-                    <field name="first_extend_end_date"  />
-                    <field name="second_extend_no"  />
-                    <field name="second_extend_star_date"  />
-                    <field name="second_extend_end_date"  />
+                    <field name="destination"  optional="hide" />
+                    <field name="contractor1"  optional="hide" />
+                    <field name="contractor2"  optional="hide" />
+                    <field name="contractor3"  optional="hide" />
+                    <field name="contractor4"  optional="hide" />
+                    <field name="contractor5"  optional="hide" />
+                    <field name="first_extend_no"  optional="hide" />
+                    <field name="first_extend_star_date"  optional="hide" />
+                    <field name="first_extend_end_date"  optional="hide" />
+                    <field name="second_extend_no"  optional="hide" />
+                    <field name="second_extend_star_date"  optional="hide" />
+                    <field name="second_extend_end_date"  optional="hide" />
 
 
                 </tree>
@@ -47,6 +49,10 @@
             <field name="model">sd_payaneh_import.registration</field>
             <field name="arch" type="xml">
                 <search>
+                    <filter name="all" string="All" domain="['|', ('active', '=', False),('active', '=', True)]"/>
+                    <separator/>
+                    <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+
                 </search>
             </field>
         </record>

@@ -14,7 +14,7 @@ class SdPaynehImpoertRegistration(models.Model):
     registration_no = fields.Char()
     letter_no = fields.Char()
     contract_no = fields.Char()
-    bill_of_lading = fields.Char()
+    order_no = fields.Char()
     buyer = fields.Char()
     amount = fields.Char()
     unit = fields.Char()
@@ -39,7 +39,64 @@ class SdPaynehImpoertRegistration(models.Model):
 
     description = fields.Char()
 
-    def process_records(self):
+    def process_buyers(self):
+        active_ids = self.env.context.get('active_ids')
+        print(f'\n {active_ids}')
+        data_model = self.browse(active_ids)
+        payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
+        payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
+        payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
+        payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+        for rec in data_model:
+            rec_item = rec.buyer.strip()
+            if not payaneh_buyers_model.search([('name', '=', rec_item)]):
+                try:
+                    payaneh_buyers_model.create({'name': rec_item})
+                    rec.write({'description': _(f'CREATED')})
+                except Exception as er:
+                    rec.write({'description': _(f'ERROR: {er}')})
+            else:
+                rec.write({'description': _(f'EXISTS')})
+
+    def process_contractors(self):
+        active_ids = self.env.context.get('active_ids')
+        print(f'\n {active_ids}')
+        data_model = self.browse(active_ids)
+        payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
+        payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
+        payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
+        payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+        for rec in data_model:
+            for cont in [rec.contractor1, rec.contractor2, rec.contractor3, rec.contractor4, rec.contractor5, ]:
+                rec_item = cont.strip()
+                if not payaneh_contractors_model.search([('name', '=', rec_item)]):
+                    try:
+                        payaneh_contractors_model.create({'name': rec_item})
+                        rec.write({'description': _(f'CREATED')})
+                    except Exception as er:
+                        rec.write({'description': _(f'ERROR: {er}')})
+                else:
+                    rec.write({'description': _(f'EXISTS')})
+
+    def process_destinations(self):
+        active_ids = self.env.context.get('active_ids')
+        print(f'\n {active_ids}')
+        data_model = self.browse(active_ids)
+        payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
+        payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
+        payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
+        payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+        for rec in data_model:
+            rec_item = rec.destination.strip()
+            if not payaneh_destinations_model.search([('name', '=', rec_item)]):
+                try:
+                    payaneh_destinations_model.create({'name': rec_item})
+                    rec.write({'description': _(f'CREATED')})
+                except Exception as er:
+                    rec.write({'description': _(f'ERROR: {er}')})
+            else:
+                rec.write({'description': _(f'EXISTS')})
+    def process_registrations(self):
         active_ids = self.env.context.get('active_ids')
         print(f'\n {active_ids}')
         data_model = self.browse(active_ids)
@@ -53,6 +110,8 @@ class SdPaynehImpoertRegistration(models.Model):
 
         for data in data_model:
             # buyer
+            logging.error(f'\n buyer:')
+
             buyer = list(filter(lambda b: b[0] == data.buyer, buyers))
             if len(buyer) == 0:
                 data.write({'description': _('There is no buyer found')})
@@ -61,6 +120,7 @@ class SdPaynehImpoertRegistration(models.Model):
                 data.write({'description': _(f'There are multiple buyers found \n {buyer}')})
                 continue
             # destination
+            logging.error(f'\n destination:')
             destination = list(filter(lambda d: d[0] == data.destination, destinations))
             if len(destination) == 0:
                 data.write({'description': _('There is no destination found')})
@@ -70,6 +130,7 @@ class SdPaynehImpoertRegistration(models.Model):
                 continue
 
             # contractors
+            logging.error(f'\n contractors:')
             contractors_list = []
             contractor_error = False
             for data_contractor in [data.contractor1, data.contractor2, data.contractor3, data.contractor4, data.contractor5]:
@@ -92,6 +153,7 @@ class SdPaynehImpoertRegistration(models.Model):
 
             try:
                 # datetime
+                logging.error(f'\n datetime:')
                 dt = re.findall( '([\d]{4})/([\d]{1,2})/([\d]{1,2})', data.start_date)
                 if dt:
                     start_date = jdatetime.date(int(dt[0][0]), int(dt[0][1]), int(dt[0][2])).togregorian()
@@ -118,10 +180,11 @@ class SdPaynehImpoertRegistration(models.Model):
 
 
                 # save new record
+                logging.error(f'\n save new record:')
                 payaneh_data_model.create({'registration_no': str(data.registration_no).split('.')[0],
                                            'letter_no': data.letter_no,
                                            'contract_no': data.contract_no,
-                                           'bill_of_lading': data.bill_of_lading,
+                                           'order_no': data.order_no,
                                            'buyer': buyer[0][1],
                                            'amount': int(float(data.amount)),
                                            'unit': 'barrel' if data.unit == 'بشکه' else 'metric_ton',
@@ -139,6 +202,7 @@ class SdPaynehImpoertRegistration(models.Model):
                                            'second_extend_star_date': second_extend_star_date,
                                            'second_extend_end_date': second_extend_end_date,
                                            })
+                logging.error('\n  data.write ')
                 data.write({'active': False, 'description': ''})
 
             except Exception as e:
