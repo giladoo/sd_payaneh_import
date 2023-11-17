@@ -8,23 +8,27 @@
                 <tree editable="bottom" multi_edit="1">
                     <header>
 <!--                        <button name="records_statistics" string="Statistics" type="object" class="btn btn-success mx-1"/>-->
-<!--                        <button name="process_drivers" string="Process Drivers" type="object" class="btn btn-info mx-1"/>-->
+                        <button name="process_drivers" string="Drivers" type="object" class="btn btn-info mx-1"/>
+                        <button name="process_trucks" string="Trucks" type="object" class="btn btn-info mx-1"/>
                         <button name="process_records" string="Process Records" type="object" class="btn btn-info mx-1"/>
 <!--                        <button name="process_actions" string="Process Actions" type="object" class="btn btn-warning mx-1"/>-->
                     </header>
                     <field name="active" invisible="1" />
                     <field name="document_no"  />
-                    <field name="description"  />
-                    <field name="loading_no"  />
-                    <field name="loading_date"  />
-                    <field name="jmonth"  />
-                    <field name="jyear"  />
-                    <field name="registration_no"  />
-                    <field name="buyer"  />
-                    <field name="contractor"  />
-                    <field name="driver"  />
-                    <field name="driver_m"  />
-                    <field name="card_no"  />
+                    <field name="description" optional="show" />
+                    <field name="remain_amount"  optional="show" />
+                    <field name="loading_no"  optional="show" />
+                    <field name="loading_date" optional="show" />
+                    <field name="jmonth" optional="hide" />
+                    <field name="jyear" optional="hide" />
+                    <field name="registration_no" optional="show" />
+                    <field name="buyer" optional="show" />
+                    <field name="contractor" optional="show" />
+                    <field name="driver" optional="show" />
+                    <field name="driver_m" optional="hide" />
+                    <field name="card_no" optional="show" />
+                    <field name="truck" optional="show" />
+                    <field name="truck_plate" optional="show" />
                     <field name="plate_1"  optional="hide" />
                     <field name="plate_2"  optional="hide" />
                     <field name="plate_3"  optional="hide" />

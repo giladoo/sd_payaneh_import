@@ -18,7 +18,11 @@
                             <field name="excel_file_rows" invisible="1" />
                             <field name="start_row"  />
                             <field name="end_row"  />
-
+                            <label for="month" string="Month"/>
+                            <div class="o_row">
+                                <field name="month" class="col col-lg-5" />
+                                <field name="year" class="col col-lg-4"/>
+                            </div>
 <!--                            <field name="file_date" widget="date" />-->
 <!--                            <field name="sheet_list" />-->
 <!--                            <div class="row sd_payaneh_import_sheet_names">-->
@@ -47,11 +51,7 @@
                         <group >
 <!--                            <field name="start_date" />-->
 <!--                            <field name="calendar" invisible="context.get('lang') != 'fa_IR'"/>-->
-                            <label for="month" string="Month"/>
-                            <div class="o_row">
-                                <field name="month" class="col col-lg-5" />
-                                <field name="year" class="col col-lg-4"/>
-                            </div>
+
                         </group>
 
                     </group>

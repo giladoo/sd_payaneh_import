@@ -13,6 +13,7 @@ class SdPaynehImpoertInput(models.Model):
     active = fields.Boolean(default=True)
     document_no = fields.Char()
     loading_no = fields.Char()
+    remain_amount = fields.Char()
     loading_date = fields.Char()
     registration_no = fields.Char()
     buyer = fields.Char()
@@ -20,6 +21,8 @@ class SdPaynehImpoertInput(models.Model):
     driver = fields.Char()
     driver_m = fields.Many2one('sd_payaneh_nafti.drivers')
     card_no = fields.Char()
+    truck_plate = fields.Char()
+    truck = fields.Many2one('sd_payaneh_nafti.trucks')
     plate_1 = fields.Char()
     plate_2 = fields.Char()
     plate_3 = fields.Char()
@@ -73,15 +76,73 @@ class SdPaynehImpoertInput(models.Model):
         records = self.browse(active_ids)
         drivers_model = self.env['sd_payaneh_nafti.drivers']
         for rec in records:
-            if not drivers_model.search([('name', '=', rec.driver)]):
-                drivers_model.create({'name': rec.driver})
-            drivers = drivers_model.search([('name', '=', rec.driver)])
+            if not drivers_model.search([('card_no', '=', rec.card_no)]):
+                drivers_model.create({'name': rec.driver, 'card_no': rec.card_no})
+            drivers = drivers_model.search([('card_no', '=', rec.card_no)])
             if len(drivers) == 1:
-                rec.write({'driver_m': drivers.id})
+                rec.write({'driver_m': drivers.id, 'description': f'' })
+            elif len(drivers) == 0:
+                rec.write({'description': f'No driver: [{rec.card_no}]'})
+            else:
+                rec.write({'description': f'Multiple drivers: [{rec.card_no}]'})
+    def process_trucks(self):
+        active_ids = self.env.context.get('active_ids')
+        records = self.browse(active_ids)
+        trucks_model = self.env['sd_payaneh_nafti.trucks']
+        trucks_all = self.env['sd_payaneh_nafti.trucks'].search([])
+        records_trucks = set()
+
+        # create a list of unique plate numbers
+        for rec in records:
+            if not (rec.plate_1).isdigit():
+                continue
+            plate_1 = str(int(float(rec.plate_1)))
+            plate_2 = str(int(float(rec.plate_2)))
+            plate_3 = str(rec.plate_3)
+            plate_4 = str(int(float(rec.plate_4)))
+            records_trucks.add((plate_1, plate_2, plate_3, plate_4, ))
+            rec.truck_plate = f'[ {plate_4}  {plate_3}  {plate_2} ]  [ {plate_1} ]'
+
+        # create new truck if there is no plane
+        for records_truck in records_trucks:
+            truck = [trk.id for trk in trucks_all
+                     if records_truck[0] == trk.plate_1
+                     and records_truck[1] == trk.plate_2
+                     and records_truck[2] == trk.plate_3
+                     and records_truck[3] == trk.plate_4]
+            if len(truck) == 0:
+                new_truck = trucks_model.create({'plate_1': records_truck[0],
+                                                 'plate_2': records_truck[1],
+                                                 'plate_3': records_truck[2],
+                                                 'plate_4': records_truck[3],})
+            else:
+                pass
+
+        # link the plate to the input data
+        trucks_all = self.env['sd_payaneh_nafti.trucks'].search([])
+        for rec in records:
+            if not (rec.plate_1).isdigit():
+                continue
+            plate_1 = str(int(float(rec.plate_1)))
+            plate_2 = str(int(float(rec.plate_2)))
+            plate_3 = str(rec.plate_3)
+            plate_4 = str(int(float(rec.plate_4)))
+            truck = [trk.id for trk in trucks_all
+                     if plate_1 == trk.plate_1
+                     and plate_2 == trk.plate_2
+                     and plate_3 == trk.plate_3
+                     and plate_4 == trk.plate_4]
+            if len(truck) == 1:
+                rec.write({'truck': truck[0], 'description': 'Truck Linked', })
+            if len(truck) > 1:
+                rec.write({'description': 'Truck multi', })
+            else:
+                rec.write({'description': 'Truck mismatch', })
+
 
     def process_records(self):
         active_ids = self.env.context.get('active_ids')
-        print(f'\n {active_ids}')
+        # print(f'\n {active_ids}')
         # jyear = 1402
         # jmonth = 4
         data_model = self.browse(active_ids)
@@ -94,12 +155,16 @@ class SdPaynehImpoertInput(models.Model):
         buyers = [(b.name, b.id) for b in payaneh_buyers_model]
         destinations = [(d.name, d.id) for d in payaneh_destinations_model]
         contractors = [(c.name, c.id) for c in payaneh_contractors_model]
-        drivers = [(c.name, c.id) for c in payaneh_drivers_model]
+        drivers = [(c.card_no, c.id) for c in payaneh_drivers_model]
         registrations = [(reg.registration_no, reg.id) for reg in payaneh_registration_model]
+        input_infos = [(info.document_no, info.id) for info in payaneh_data_model]
         for data in data_model:
             try:
                 if not data.document_no.isdigit():
                     data.write({'description': f'document_no is not a number: [{data.document_no}]'})
+                    continue
+                elif len([rec for rec in input_infos if rec[0] == data.document_no ]) != 0:
+                    data.write({'active': False, 'description': f'document_no is exist: [{data.document_no}]'})
                     continue
 
                 if data.loading_date.isdigit():
@@ -130,7 +195,7 @@ class SdPaynehImpoertInput(models.Model):
                     data.write({'description': _(f'There are multiple contractor found \n {contractor}')})
                     continue
 
-                driver = list(filter(lambda d: d[0] == data.driver, drivers))
+                driver = list(filter(lambda d: d[0] == data.driver_m.card_no, drivers))
                 if len(driver) == 0:
                     data.write({'description': _(f'There is no driver found\n {driver}')})
                     continue
@@ -142,17 +207,20 @@ class SdPaynehImpoertInput(models.Model):
                 data.write({'description': f'calculations: {e}'})
                 continue
             try:
-                payaneh_data_model.create({'document_no': data.document_no,
+                input_id = payaneh_data_model.create({'document_no': data.document_no,
+                                           'remain_amount_old': data.remain_amount,
                                            'loading_no': data.loading_no,
+                                           'request_date': loading_date,
                                            'loading_date': loading_date,
                                            'registration_no': registration[0][1],
                                            'contractor': contractor[0][1],
-                                           'driver': driver[0][1],
-                                           'card_no': data.card_no,
-                                           'plate_1': data.plate_1.split('.')[0],
-                                           'plate_2': data.plate_2.split('.')[0],
-                                           'plate_3': data.plate_3,
-                                           'plate_4': data.plate_4.split('.')[0],
+                                           # 'driver': driver[0][1],
+                                           'driver': data.driver_m.id,
+                                           'truck_no': data.truck.id,
+                                           # 'plate_1': data.plate_1.split('.')[0],
+                                           # 'plate_2': data.plate_2.split('.')[0],
+                                           # 'plate_3': data.plate_3,
+                                           # 'plate_4': data.plate_4.split('.')[0],
                                            'front_container': int(float(data.front_container)) if data.front_container.isdigit() else 0,
                                            'middle_container': int(float(data.middle_container)) if data.middle_container.isdigit() else 0,
                                            'back_container': int(float(data.back_container)) if data.back_container.isdigit() else 0,
@@ -173,6 +241,7 @@ class SdPaynehImpoertInput(models.Model):
                                            'correction_factor': data.correction_factor,
 
                                            })
+                input_id.write({'sp_gr': data.sp_gr})
                 data.write({'active': False, 'description': ''})
             except Exception as e:
                 data.write({'description': f'save: {e}'})

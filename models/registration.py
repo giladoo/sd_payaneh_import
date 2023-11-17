@@ -41,7 +41,7 @@ class SdPaynehImpoertRegistration(models.Model):
 
     def process_buyers(self):
         active_ids = self.env.context.get('active_ids')
-        print(f'\n {active_ids}')
+        # print(f'\n {active_ids}')
         data_model = self.browse(active_ids)
         payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
@@ -60,7 +60,7 @@ class SdPaynehImpoertRegistration(models.Model):
 
     def process_contractors(self):
         active_ids = self.env.context.get('active_ids')
-        print(f'\n {active_ids}')
+        # print(f'\n {active_ids}')
         data_model = self.browse(active_ids)
         payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
@@ -80,7 +80,7 @@ class SdPaynehImpoertRegistration(models.Model):
 
     def process_destinations(self):
         active_ids = self.env.context.get('active_ids')
-        print(f'\n {active_ids}')
+        # print(f'\n {active_ids}')
         data_model = self.browse(active_ids)
         payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
@@ -98,12 +98,25 @@ class SdPaynehImpoertRegistration(models.Model):
                 rec.write({'description': _(f'EXISTS')})
     def process_registrations(self):
         active_ids = self.env.context.get('active_ids')
-        print(f'\n {active_ids}')
+        # print(f'\nactive_ids {active_ids}')
         data_model = self.browse(active_ids)
+        registration_no_list = ()
+        registration_id_list = ()
+        data_model_ids = dict(((rec.registration_no, rec.id) for rec in data_model))
+        # print(f'\ndata_model_ids: {data_model_ids}')
+
+        # for key, value in data_model_ids.items():
+        #     if key not in registration_no_list:
+        #         registration_no_list.append(key)
+        #         registration_id_list.append(value)
+        data_model = self.browse(data_model_ids.values())
+        # print(f'\ndata_model: {data_model}')
+
         payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
         payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
         payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+        registrations = ([(r.registration_no, r.id) for r in payaneh_data_model.search([])])
         buyers = [(b.name, b.id) for b in payaneh_buyers_model]
         destinations = [(d.name, d.id) for d in payaneh_destinations_model]
         contractors = [(c.name, c.id) for c in payaneh_contractors_model]
@@ -111,6 +124,9 @@ class SdPaynehImpoertRegistration(models.Model):
         for data in data_model:
             # buyer
             logging.error(f'\n buyer:')
+            if len(list((r[0] for r in registrations if r[0] == str(data.registration_no).split('.')[0]))) != 0:
+                data.write({'active': False, 'description': f'registration_no is exist: [{data.registration_no}]'})
+                continue
 
             buyer = list(filter(lambda b: b[0] == data.buyer, buyers))
             if len(buyer) == 0:
@@ -149,7 +165,7 @@ class SdPaynehImpoertRegistration(models.Model):
                     contractors_list.append(contractor[0][1])
             if contractor_error:
                 continue
-            print(f'\n int(float(data.registration_no)): {int(float(data.registration_no))}')
+            # print(f'\n int(float(data.registration_no)): {int(float(data.registration_no))}')
 
             try:
                 # datetime
@@ -168,7 +184,7 @@ class SdPaynehImpoertRegistration(models.Model):
                     continue
 
                 dt = re.findall( '([\d]{4})/([\d]{1,2})/([\d]{1,2})', data.first_extend_star_date)
-                print(f'\n first_extend_star_date: {dt}')
+                # print(f'\n first_extend_star_date: {dt}')
                 first_extend_star_date = jdatetime.date(int(dt[0][0]), int(dt[0][1]), int(dt[0][2])).togregorian() if len(dt) == 1 else False
                 dt = re.findall( '([\d]{4})/([\d]{1,2})/([\d]{1,2})', data.first_extend_end_date)
                 first_extend_end_date = jdatetime.date(int(dt[0][0]), int(dt[0][1]), int(dt[0][2])).togregorian() if len(dt) == 1 else False
@@ -184,7 +200,7 @@ class SdPaynehImpoertRegistration(models.Model):
                 payaneh_data_model.create({'registration_no': str(data.registration_no).split('.')[0],
                                            'letter_no': data.letter_no,
                                            'contract_no': data.contract_no,
-                                           'order_no': data.order_no,
+                                           'order_no': str(data.order_no).split('.')[0],
                                            'buyer': buyer[0][1],
                                            'amount': int(float(data.amount)),
                                            'unit': 'barrel' if data.unit == 'بشکه' else 'metric_ton',
@@ -203,7 +219,7 @@ class SdPaynehImpoertRegistration(models.Model):
                                            'second_extend_end_date': second_extend_end_date,
                                            })
                 logging.error('\n  data.write ')
-                data.write({'active': False, 'description': ''})
+                data.write({'active': False, 'description': 'Done'})
 
             except Exception as e:
                 data.write({'description': e})

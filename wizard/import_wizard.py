@@ -16,7 +16,7 @@ import io
 # from tabulate import tabulate
 # from prettytable import PrettyTable
 from . import get_calendare as gc
-
+import warnings
 
 # #############################################################################
 class SdPayanehImportImportWizard(models.TransientModel):
@@ -24,7 +24,7 @@ class SdPayanehImportImportWizard(models.TransientModel):
     _description = 'Database Import Wizard'
 
     data_type = fields.Selection(selection=[('ثبت قرارداد', 'ثبت قرارداد'),
-                                            ('اطلاعات ورودی ', 'اطلاعات ورودی '),], string='Data Type', default='اطلاعات ورودی ')
+                                            ('اطلاعات ورودی', 'اطلاعات ورودی'),], string='Data Type', default='اطلاعات ورودی')
 
     excel_file = fields.Binary(required=True)
     excel_file_name = fields.Char()
@@ -51,7 +51,19 @@ class SdPayanehImportImportWizard(models.TransientModel):
             if self.excel_file:
                 if self.excel_file and self.excel_file_name and (self.excel_file_name.split('.')[-1]).lower() in ['xlsx', 'xlsm']:
                     excel_file = base64.b64decode(self.excel_file)
-                    excel_data = pd.read_excel(excel_file, sheet_name=self.data_type)
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", category=UserWarning)
+                        excel_data_init = pd.read_excel(excel_file, sheet_name='اطلاعات ورود به ماه جدید')
+
+                    # print(f'\n excel_data_init.iloc[2][3]: {excel_data_init.iloc[0:10][0:6]}\n')
+                    self.year = str(excel_data_init.iloc[0][2])
+                    month = str(excel_data_init.iloc[0][5])
+                    self.month = gc.month_num_pr(month)
+                    # print(f'\n {self.year}  {self.month}')
+
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", category=UserWarning)
+                        excel_data = pd.read_excel(excel_file, sheet_name=self.data_type)
                     self.end_row = excel_data.index.stop + 1
                     self.excel_file_rows = excel_data.index.stop
         except Exception as e:
@@ -77,9 +89,7 @@ class SdPayanehImportImportWizard(models.TransientModel):
         read_form = self.read()[0]
         data = {'form_data': read_form}
         data_type = read_form.get('data_type')
-        registration_model = self.env['sd_payaneh_import.registration']
-        all_registration_no = [rec.registration_no for rec in
-                                    registration_model.search([('active', '=', True), ('active', '=', False)])]
+
         input_model = self.env['sd_payaneh_import.input']
         if read_form.get('excel_file'):
             if self.excel_file and self.excel_file_name and (self.excel_file_name.split('.')[-1]).lower() in ['xlsx', 'xlsm']:
@@ -95,18 +105,24 @@ class SdPayanehImportImportWizard(models.TransientModel):
                     # # return
                     # if data_type not in sheets:
                     #     raise UserError(_(f'The file [{self.excel_file_name}] does not have a sheet of [{data_type}] '))
-
-                    excel_data = pd.read_excel(excel_file, sheet_name=data_type)
-                    print(f'\n{excel_data.iloc[0][3]}\n{excel_data.iloc[0]}\n')
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", category=UserWarning)
+                        excel_data = pd.read_excel(excel_file, sheet_name=data_type)
                     if data_type == 'ثبت قرارداد':
-
-                        for index in range(self.start_row -1, self.end_row):
-                            if str(excel_data.iloc[index][0]) == '' or str(excel_data.iloc[index][0]).lower() == 'nan':
+                        registration_model = self.env['sd_payaneh_import.registration']
+                        all_registration_no = [rec.registration_no for rec in
+                                               registration_model.search(
+                                                   ['|', ('active', '=', True), ('active', '=', False)])]
+                        for index in range(self.start_row - 1, self.end_row):
+                            reg_no_str = str(excel_data.iloc[index][0]).split(".")[0]
+                            # print(f'++++++ all_registration_no: {all_registration_no}')
+                            # print(f'------> {reg_no_str}  {reg_no_str.lower() in ["nan", "", "0"]}  {not reg_no_str.isdigit()} {reg_no_str in all_registration_no}')
+                            if reg_no_str.lower() in ['nan', '', '0'] \
+                                    or not reg_no_str.isdigit() \
+                                    or reg_no_str in all_registration_no:
                                 continue
-                            if str(excel_data.iloc[index][0]) in all_registration_no:
-                                continue
 
-                            registration_model.create({'registration_no': excel_data.iloc[index][0] if str(excel_data.iloc[index][0]) != 'nan' else '',
+                            registration_model.create({'registration_no': int(reg_no_str),
                                                         'letter_no': excel_data.iloc[index][1] if str(excel_data.iloc[index][1]) != 'nan' else '',
                                                         'contract_no': excel_data.iloc[index][2] if str(excel_data.iloc[index][2]) != 'nan' else '',
                                                         'order_no': excel_data.iloc[index][3] if str(excel_data.iloc[index][3]) != 'nan' else '',
@@ -133,11 +149,18 @@ class SdPayanehImportImportWizard(models.TransientModel):
                                                         'second_extend_star_date': excel_data.iloc[index][22] if str(excel_data.iloc[index][22]) != 'nan' else '',
                                                         'second_extend_end_date': excel_data.iloc[index][23] if str(excel_data.iloc[index][23]) != 'nan' else '',})
 
-                    if data_type == 'اطلاعات ورودی ':
+                    if data_type == 'اطلاعات ورودی':
+                        # input_model = self.env['sd_payaneh_import.input']
+                        all_document_no = [rec.document_no for rec in input_model.search(
+                                                                ['|', ('active', '=', True), ('active', '=', False)])]
                         for index in range(self.start_row -1, self.end_row):
-                            if str(excel_data.iloc[index][0]) == '' or str(excel_data.iloc[index][0]).lower() == 'nan':
+                            doc_no_str = str(excel_data.iloc[index][1]).split(".")[0]
+                            if doc_no_str.lower() in ['nan', '', '0'] \
+                                    or not doc_no_str.isdigit() \
+                                    or doc_no_str in all_document_no:
                                 continue
-                            input_model.create({'document_no': excel_data.iloc[index][1] if str(excel_data.iloc[index][1]) != 'nan' else '',
+                            input_model.create({'document_no': int(doc_no_str),
+                                                       'remain_amount': round(excel_data.iloc[index][0], 2) if str(excel_data.iloc[index][0]) != 'nan' else '',
                                                        'loading_no': excel_data.iloc[index][2] if str(excel_data.iloc[index][2]) != 'nan' else '',
                                                        'loading_date': excel_data.iloc[index][3] if str(excel_data.iloc[index][3]) != 'nan' else '',
                                                        'registration_no': excel_data.iloc[index][4] if str(excel_data.iloc[index][4]) != 'nan' else '',
