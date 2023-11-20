@@ -83,8 +83,11 @@ class SdPayanehImportImportWizard(models.TransientModel):
 
     # #############################################################################
     def hse_test_import(self):
+        counter_done = 0
+        counter_ignore = 0
         self.log_field = ''
         error_log = ''
+        sheet_name = ''
         log_result = ''
         read_form = self.read()[0]
         data = {'form_data': read_form}
@@ -109,6 +112,7 @@ class SdPayanehImportImportWizard(models.TransientModel):
                         warnings.filterwarnings("ignore", category=UserWarning)
                         excel_data = pd.read_excel(excel_file, sheet_name=data_type)
                     if data_type == 'ثبت قرارداد':
+                        sheet_name = 'ثبت قرارداد'
                         registration_model = self.env['sd_payaneh_import.registration']
                         all_registration_no = [rec.registration_no for rec in
                                                registration_model.search(
@@ -117,9 +121,17 @@ class SdPayanehImportImportWizard(models.TransientModel):
                             reg_no_str = str(excel_data.iloc[index][0]).split(".")[0]
                             # print(f'++++++ all_registration_no: {all_registration_no}')
                             # print(f'------> {reg_no_str}  {reg_no_str.lower() in ["nan", "", "0"]}  {not reg_no_str.isdigit()} {reg_no_str in all_registration_no}')
-                            if reg_no_str.lower() in ['nan', '', '0'] \
-                                    or not reg_no_str.isdigit() \
-                                    or reg_no_str in all_registration_no:
+                            if reg_no_str.lower() in ['nan', '', '0']:
+                                log_result += f'index: {index} | reg no is one of nan, empty, or 0  \n'
+                                counter_ignore += 1
+                                continue
+                            elif not reg_no_str.isdigit():
+                                log_result += f'index: {index} | reg is not a digit  \n'
+                                counter_ignore += 1
+                                continue
+                            elif reg_no_str in all_registration_no:
+                                log_result += f'index: {index} | reg is exists  \n'
+                                counter_ignore += 1
                                 continue
 
                             registration_model.create({'registration_no': int(reg_no_str),
@@ -148,16 +160,29 @@ class SdPayanehImportImportWizard(models.TransientModel):
                                                         'second_extend_no': excel_data.iloc[index][21] if str(excel_data.iloc[index][21]) != 'nan' else '',
                                                         'second_extend_star_date': excel_data.iloc[index][22] if str(excel_data.iloc[index][22]) != 'nan' else '',
                                                         'second_extend_end_date': excel_data.iloc[index][23] if str(excel_data.iloc[index][23]) != 'nan' else '',})
+                            counter_done += 1
+                            log_result += f'index: {index} | Done  \n'
 
                     if data_type == 'اطلاعات ورودی':
+                        sheet_name = 'اطلاعات ورودی'
+
                         # input_model = self.env['sd_payaneh_import.input']
                         all_document_no = [rec.document_no for rec in input_model.search(
                                                                 ['|', ('active', '=', True), ('active', '=', False)])]
                         for index in range(self.start_row -1, self.end_row):
                             doc_no_str = str(excel_data.iloc[index][1]).split(".")[0]
-                            if doc_no_str.lower() in ['nan', '', '0'] \
-                                    or not doc_no_str.isdigit() \
-                                    or doc_no_str in all_document_no:
+
+                            if doc_no_str.lower() in ['nan', '', '0']:
+                                log_result += f'index: {index} | doc no is one of nan, empty, or 0 \n '
+                                counter_ignore += 1
+                                continue
+                            elif not doc_no_str.isdigit():
+                                log_result += f'index: {index} | doc is not a digit \n '
+                                counter_ignore += 1
+                                continue
+                            elif doc_no_str in all_document_no:
+                                log_result += f'index: {index} | doc is exists \n '
+                                counter_ignore += 1
                                 continue
                             input_model.create({'document_no': int(doc_no_str),
                                                        'remain_amount': round(excel_data.iloc[index][0], 2) if str(excel_data.iloc[index][0]) != 'nan' else '',
@@ -216,6 +241,8 @@ class SdPayanehImportImportWizard(models.TransientModel):
                                                        'jyear': int(self.year),
                                                         'jmonth': int(self.month),
                                                        })
+                            counter_done += 1
+                            log_result += f'index: {index} | Done \n'
 
                 except Exception as e:
                     logging.error(f'hse_test_import: {e}')
@@ -229,7 +256,9 @@ class SdPayanehImportImportWizard(models.TransientModel):
         # t.add_rows(log_result)
         # print(t)
         # self.log_field += str(t)
-        self.log_field += 'Ignored Sheets:\n' + error_log
+        self.log_field += f'Sheet name:{sheet_name}'
+        self.log_field += '\n----------------------------------------------------\n'
+        self.log_field += f'Ignored: {counter_ignore}       Done: {counter_done}'
         self.log_field += '\n----------------------------------------------------\n'
         self.log_field += log_result
 
