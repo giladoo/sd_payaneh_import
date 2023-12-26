@@ -5,8 +5,12 @@
         <field name="model">sd_payaneh_nafti.input_info</field>
         <field name="inherit_id" ref="sd_payaneh_nafti.sd_payaneh_nafti_input_info_list_1"/>
         <field name="arch" type="xml">
-                <xpath expr="//field[@name='remain_amount']" position="after">
+            <xpath expr="//field[@name='remain_amount']" position="after">
                 <field name="remain_amount_old" groups="base.group_system" optional="hide"/>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button string="Make Done" name="make_done" class="btn btn-danger mx-1"
+                        groups="base.group_system" type="object"/>
             </xpath>
         </field>
     </record>
