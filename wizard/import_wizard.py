@@ -24,7 +24,10 @@ class SdPayanehImportImportWizard(models.TransientModel):
     _description = 'Database Import Wizard'
 
     data_type = fields.Selection(selection=[('ثبت قرارداد', 'ثبت قرارداد'),
-                                            ('اطلاعات ورودی', 'اطلاعات ورودی'),], string='Data Type', default='اطلاعات ورودی')
+                                            ('ثبت قرارداد ها', 'ثبت قرارداد ها'),
+                                            ('اطلاعات ورودی', 'اطلاعات ورودی'),
+                                            ('ثبت اطلاعات', 'ثبت اطلاعات'),
+                                            ], string='Data Type', default='اطلاعات ورودی')
 
     excel_file = fields.Binary(required=True)
     excel_file_name = fields.Char()
@@ -111,8 +114,12 @@ class SdPayanehImportImportWizard(models.TransientModel):
                     with warnings.catch_warnings():
                         warnings.filterwarnings("ignore", category=UserWarning)
                         excel_data = pd.read_excel(excel_file, sheet_name=data_type)
-                    if data_type == 'ثبت قرارداد':
-                        sheet_name = 'ثبت قرارداد'
+                    if data_type in ['ثبت قرارداد', 'ثبت قرارداد ها']:
+                        if data_type in ['ثبت قرارداد']:
+                            sheet_name = 'ثبت قرارداد'
+                        if data_type in [ 'ثبت قرارداد ها']:
+                            sheet_name = 'ثبت قرارداد ها'
+
                         registration_model = self.env['sd_payaneh_import.registration']
                         all_registration_no = [rec.registration_no for rec in
                                                registration_model.search(
@@ -163,8 +170,11 @@ class SdPayanehImportImportWizard(models.TransientModel):
                             counter_done += 1
                             log_result += f'index: {index} | Done  \n'
 
-                    if data_type == 'اطلاعات ورودی':
-                        sheet_name = 'اطلاعات ورودی'
+                    if data_type in ['اطلاعات ورودی', 'ثبت اطلاعات']:
+                        if data_type in ['اطلاعات ورودی',]:
+                            sheet_name = 'اطلاعات ورودی'
+                        if data_type in [ 'ثبت اطلاعات']:
+                            sheet_name = 'ثبت اطلاعات'
 
                         # input_model = self.env['sd_payaneh_import.input']
                         all_document_no = [rec.document_no for rec in input_model.search(
