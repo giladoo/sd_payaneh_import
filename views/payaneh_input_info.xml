@@ -13,6 +13,8 @@
                         groups="base.group_system" type="object"/>
                 <button string="Loading info Date" name="update_loading_info_date" class="btn btn-warning mx-1"
                         groups="base.group_system" type="object"/>
+                <button string="Loading info Date ALL" name="update_loading_info_date_all" class="btn btn-danger mx-1"
+                        groups="base.group_system" type="object"/>
             </xpath>
         </field>
     </record>
