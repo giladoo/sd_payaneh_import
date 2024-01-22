@@ -202,6 +202,9 @@ class SdPaynehImpoertInput(models.Model):
                 elif len(driver) > 1:
                     data.write({'description': _(f'There are multiple driver found \n {driver}')})
                     continue
+                if not data.truck.id > 0:
+                    data.write({'description': _(f'Truck No Empty')})
+                    continue
                 # save new record
             except Exception as e:
                 data.write({'description': f'calculations: {e}'})
