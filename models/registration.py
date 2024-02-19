@@ -103,6 +103,42 @@ class SdPaynehImpoertRegistration(models.Model):
                     rec.write({'description': _(f'ERROR: {er}')})
             else:
                 rec.write({'description': _(f'EXISTS')})
+    def process_registration_contractors(self):
+        active_ids = self.env.context.get('active_ids')
+        data_model = self.browse(active_ids)
+        payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration'].search([])
+        payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+
+        contractors = list([(c.name, c.id) for c in payaneh_contractors_model])
+
+        for data in data_model:
+
+            contractors_list = []
+            contractor_error = False
+            for data_contractor in [data.contractor1, data.contractor2, data.contractor3, data.contractor4,
+                                    data.contractor5]:
+                if data_contractor.strip() == '':
+                    continue
+                contractor = list(filter(lambda d: d[0] == data_contractor, contractors))
+                if len(contractor) == 0:
+                    data.write({'description': _(f'There is no contractor found\n {data_contractor}')})
+                    contractor_error = True
+                    break
+                elif len(contractor) > 1:
+                    data.write({'description': _(f'There are multiple contractors found \n {contractor}')})
+                    contractor_error = True
+                    break
+                else:
+                    contractors_list.append(contractor[0][1])
+            record = list(filter(lambda x: x.registration_no == data.registration_no, payaneh_data_model))
+            if len(record) > 1:
+                data.write({'description': 'multiple registration_no'})
+            record_contractors_list = record[0].contractors.ids
+            contractors_list_diff = set(contractors_list).difference(set(record_contractors_list))
+            print(f'+++++++> record: {record_contractors_list} contractors_list: {contractors_list} contractors_list_diff: {contractors_list_diff}')
+            if contractors_list_diff:
+                record[0].write({'contractors': list(contractors_list_diff)})
+
     def process_registrations(self):
         active_ids = self.env.context.get('active_ids')
         # print(f'\nactive_ids {active_ids}')

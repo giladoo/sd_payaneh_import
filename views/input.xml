@@ -84,6 +84,17 @@
             <field name="model">sd_payaneh_import.input</field>
             <field name="arch" type="xml">
                 <search>
+                    <field name="document_no"  />
+                    <field name="description" optional="show" />
+                    <field name="remain_amount"  optional="show" />
+                    <field name="loading_no"  optional="show" />
+                    <field name="loading_date" optional="show" />
+                    <field name="jmonth" optional="hide" />
+                    <field name="jyear" optional="hide" />
+                    <field name="registration_no" optional="show" />
+                    <field name="buyer" optional="show" />
+                    <field name="contractor" optional="show" />
+                    <field name="driver" optional="show" />
                     <filter name="all" string="All" domain="['|', ('active', '=', False),('active', '=', True)]"/>
                     <filter name="year" string="Year" context="{'group_by': 'jyear', }"/>
                     <filter name="month" string="Month" context="{'group_by': 'jmonth', }"/>
