@@ -10,7 +10,9 @@
 <!--                        <button name="records_statistics" string="Statistics" type="object" class="btn btn-success mx-1"/>-->
                         <button name="process_drivers" string="Drivers" type="object" class="btn btn-info mx-1"/>
                         <button name="process_trucks" string="Trucks" type="object" class="btn btn-info mx-1"/>
+                        <button name="process_contractors" string="Process Contractors" type="object" class="btn btn-info mx-1"/>
                         <button name="process_records" string="Process Records" type="object" class="btn btn-info mx-1"/>
+                        <button name="process_bunch" string="Process 2000 records" type="object" class="btn btn-dark mx-1"/>
 <!--                        <button name="process_actions" string="Process Actions" type="object" class="btn btn-warning mx-1"/>-->
                     </header>
                     <field name="active" invisible="1" />

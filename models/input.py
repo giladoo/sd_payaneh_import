@@ -71,9 +71,17 @@ class SdPaynehImpoertInput(models.Model):
     jyear = fields.Integer()
     jmonth = fields.Integer()
 
-    def process_drivers(self):
+    def process_bunch(self):
+        self.process_drivers(True)
+        self.process_trucks(True)
+        self.process_records(True)
+
+    def process_drivers(self, bunch=False):
         active_ids = self.env.context.get('active_ids')
-        records = self.browse(active_ids)
+        if bunch:
+            records = self.search([], limit=2000)
+        else:
+            records = self.browse(active_ids)
         drivers_model = self.env['sd_payaneh_nafti.drivers']
         for rec in records:
             if not drivers_model.search([('card_no', '=', rec.card_no)]):
@@ -85,9 +93,12 @@ class SdPaynehImpoertInput(models.Model):
                 rec.write({'description': f'No driver: [{rec.card_no}]'})
             else:
                 rec.write({'description': f'Multiple drivers: [{rec.card_no}]'})
-    def process_trucks(self):
+    def process_trucks(self, bunch=False):
         active_ids = self.env.context.get('active_ids')
-        records = self.browse(active_ids)
+        if bunch:
+            records = self.search([], limit=2000)
+        else:
+            records = self.browse(active_ids)
         trucks_model = self.env['sd_payaneh_nafti.trucks']
         trucks_all = self.env['sd_payaneh_nafti.trucks'].search([])
         records_trucks = set()
@@ -140,12 +151,17 @@ class SdPaynehImpoertInput(models.Model):
                 rec.write({'description': 'Truck mismatch', })
 
 
-    def process_records(self):
+    def process_records(self, bunch=False):
         active_ids = self.env.context.get('active_ids')
         # print(f'\n {active_ids}')
         # jyear = 1402
         # jmonth = 4
-        data_model = self.browse(active_ids)
+        # data_model = self.browse(active_ids)
+        if bunch:
+            data_model = self.search([], limit=2000)
+        else:
+            data_model = self.browse(active_ids)
+
         payaneh_data_model = self.env['sd_payaneh_nafti.input_info']
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
         payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
@@ -224,12 +240,12 @@ class SdPaynehImpoertInput(models.Model):
                                            # 'plate_2': data.plate_2.split('.')[0],
                                            # 'plate_3': data.plate_3,
                                            # 'plate_4': data.plate_4.split('.')[0],
-                                           'front_container': int(float(data.front_container)) if data.front_container.isdigit() else 0,
-                                           'middle_container': int(float(data.middle_container)) if data.middle_container.isdigit() else 0,
-                                           'back_container': int(float(data.back_container)) if data.back_container.isdigit() else 0,
+                                           'front_container': int(float(data.front_container)) if data.front_container and data.front_container.isdigit() else 0,
+                                           'middle_container': int(float(data.middle_container)) if data.middle_container and data.middle_container.isdigit() else 0,
+                                           'back_container': int(float(data.back_container)) if data.back_container and data.back_container.isdigit() else 0,
                                            'centralized_container': data.centralized_container.lower(),
                                            'sp_gr': data.sp_gr,
-                                           'temperature': int(float(data.temperature)) if data.temperature.isdigit() else False,
+                                           'temperature': int(float(data.temperature)) if data.temperature and data.temperature.isdigit() else False,
                                            'pressure': data.pressure,
                                            'meter_no': data.meter_no,
                                            'totalizer_start': data.totalizer_start,
@@ -253,6 +269,26 @@ class SdPaynehImpoertInput(models.Model):
                 print(traceback.format_exc())
                 continue
 
+    def process_contractors(self):
+        active_ids = self.env.context.get('active_ids')
+        records = self.browse(active_ids)
+        payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+        contractors = list([(c.name.strip(), c.id) for c in payaneh_contractors_model if c.name.strip() != '']) if len(
+            payaneh_contractors_model) > 0 else []
+        for rec in records:
+            rec_item = rec.contractor.strip()
+            # if not payaneh_contractors_model.search([('name', '=', rec_item)]):
+            if rec_item == '':
+                continue
+            if len(contractors) == 0 or len(list(filter(lambda x: x[0] == rec_item, contractors))) == 0:
+                try:
+                    new_rec = payaneh_contractors_model.create({'name': rec_item})
+                    contractors.append((rec_item, new_rec.id))
+                    rec.write({'description': _(f'CREATED')})
+                except Exception as er:
+                    rec.write({'description': _(f'ERROR: {er}')})
+            else:
+                rec.write({'description': _(f'EXISTS')})
 
 class SdPayanehNaftiInputInfoInherit(models.Model):
     _inherit = 'sd_payaneh_nafti.input_info'

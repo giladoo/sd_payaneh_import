@@ -11,6 +11,7 @@
                         <button name="process_contractors" string="Contractors" type="object" class="btn btn-success mx-1"/>
                         <button name="process_destinations" string="Destinations" type="object" class="btn btn-success mx-1"/>
                         <button name="process_registrations" string="Registrations" type="object" class="btn btn-info mx-1"/>
+                        <button name="process_compare" string="Compare" type="object" class="btn btn-info mx-1"/>
 <!--                        <button name="process_actions" string="Process Actions" type="object" class="btn btn-warning mx-1"/>-->
                     </header>
                     <field name="active" invisible="1" />

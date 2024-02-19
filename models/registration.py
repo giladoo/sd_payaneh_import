@@ -5,6 +5,8 @@ from odoo import models, fields, api, _
 from odoo.exceptions import AccessError, MissingError, ValidationError, UserError
 import logging
 import re
+import deepdiff
+
 
 class SdPaynehImpoertRegistration(models.Model):
     _name = 'sd_payaneh_import.registration'
@@ -58,20 +60,25 @@ class SdPaynehImpoertRegistration(models.Model):
             else:
                 rec.write({'description': _(f'EXISTS')})
 
-    def process_contractors(self):
+    def process_contractors(self,):
         active_ids = self.env.context.get('active_ids')
-        # print(f'\n {active_ids}')
         data_model = self.browse(active_ids)
+
         payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration']
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
         payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
         payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
+        contractors = list([(c.name.strip(), c.id) for c in payaneh_contractors_model if c.name.strip() != '']) if len(payaneh_contractors_model) > 0 else []
         for rec in data_model:
             for cont in [rec.contractor1, rec.contractor2, rec.contractor3, rec.contractor4, rec.contractor5, ]:
                 rec_item = cont.strip()
-                if not payaneh_contractors_model.search([('name', '=', rec_item)]):
+                # if not payaneh_contractors_model.search([('name', '=', rec_item)]):
+                if rec_item == '':
+                    continue
+                if len(contractors) == 0 or len(list(filter(lambda x: x[0] == rec_item, contractors ))) == 0:
                     try:
-                        payaneh_contractors_model.create({'name': rec_item})
+                        new_rec = payaneh_contractors_model.create({'name': rec_item})
+                        contractors.append((rec_item, new_rec.id))
                         rec.write({'description': _(f'CREATED')})
                     except Exception as er:
                         rec.write({'description': _(f'ERROR: {er}')})
@@ -117,9 +124,9 @@ class SdPaynehImpoertRegistration(models.Model):
         payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
         payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
         registrations = ([(r.registration_no, r.id) for r in payaneh_data_model.search([])])
-        buyers = [(b.name, b.id) for b in payaneh_buyers_model]
-        destinations = [(d.name, d.id) for d in payaneh_destinations_model]
-        contractors = [(c.name, c.id) for c in payaneh_contractors_model]
+        buyers = list([(b.name, b.id) for b in payaneh_buyers_model])
+        destinations = list([(d.name, d.id) for d in payaneh_destinations_model])
+        contractors = list([(c.name, c.id) for c in payaneh_contractors_model])
 
         for data in data_model:
             # buyer
@@ -150,7 +157,7 @@ class SdPaynehImpoertRegistration(models.Model):
             contractors_list = []
             contractor_error = False
             for data_contractor in [data.contractor1, data.contractor2, data.contractor3, data.contractor4, data.contractor5]:
-                if data_contractor == '':
+                if data_contractor.strip() == '':
                     continue
                 contractor = list(filter(lambda d: d[0] == data_contractor, contractors))
                 if len(contractor) == 0:
@@ -225,3 +232,75 @@ class SdPaynehImpoertRegistration(models.Model):
                 data.write({'description': e})
                 logging.error(f'\n process_records: {e}')
                 continue
+
+    def process_compare(self):
+        active_ids = self.env.context.get('active_ids')
+        # print(f'\n {active_ids}')
+        data_model = self.browse(active_ids)
+        payaneh_data_model = self.env['sd_payaneh_nafti.contract_registration'].search([])
+        for rec in data_model:
+            # registration = filter(lambda x: x.registration_no == rec.registration_no, payaneh_data_model)[0]
+            registration = [x for x in payaneh_data_model if x.registration_no == rec.registration_no ]
+            desc = ''
+            if len(registration) == 0:
+                desc = 'No Reg Found'
+            elif len(registration) > 1:
+                desc = 'Multiple Reg Found'
+            else:
+                registration = registration[0]
+                registration_data = {'registration_no': str(registration.registration_no),
+                                       'letter_no': registration.letter_no,
+                                       'contract_no': registration.contract_no,
+                                       'order_no': str(registration.order_no),
+                                       'buyer': registration.buyer.name,
+                                       'amount': int(float(registration.amount)),
+                                       'unit': registration.unit ,
+                                       'contract_type': registration.contract_type ,
+                                       'loading_type':  registration.loading_type,
+                                       # 'cargo_type': 1,
+                                       # 'start_date': start_date,
+                                       # 'end_date': end_date,
+                                       # 'destination': destination[0][1],
+                                       # 'contractors': contractors_list,
+                                       # 'first_extend_no': registration.first_extend_no,
+                                       # 'first_extend_star_date': first_extend_star_date,
+                                       # 'first_extend_end_date': first_extend_end_date,
+                                       # 'second_extend_no': registration.second_extend_no,
+                                       # 'second_extend_star_date': second_extend_star_date,
+                                       # 'second_extend_end_date': second_extend_end_date,
+                                       }
+                rec_data = {'registration_no': str(rec.registration_no).split('.')[0],
+                                       'letter_no': rec.letter_no,
+                                       'contract_no': rec.contract_no,
+                                       'order_no': str(rec.order_no).split('.')[0],
+                                       'buyer': rec.buyer,
+                                       'amount': int(float(rec.amount)),
+                                       'unit': 'barrel' if rec.unit == 'بشکه' else 'metric_ton',
+                                       'contract_type': 'stock' if rec.contract_type == 'بورس' else 'general',
+                                       'loading_type': 'internal' if rec.loading_type == 'داخلی' else 'export',
+                                       # 'cargo_type': 1,
+                                       # 'start_date': start_date,
+                                       # 'end_date': end_date,
+                                       # 'destination': destination[0][1],
+                                       # 'contractors': contractors_list,
+                                       # 'first_extend_no': rec.first_extend_no,
+                                       # 'first_extend_star_date': first_extend_star_date,
+                                       # 'first_extend_end_date': first_extend_end_date,
+                                       # 'second_extend_no': rec.second_extend_no,
+                                       # 'second_extend_star_date': second_extend_star_date,
+                                       # 'second_extend_end_date': second_extend_end_date,
+                                       }
+#                 print(f'''
+#             registration_data:
+#             {registration_data}
+#
+#             rec_data:
+#             {rec_data}
+#
+# ''')
+                if registration_data == rec_data:
+                    desc = ''
+                else:
+                    # desc = deepdiff(rec_data, registration_data )
+                    desc = 'Diff'
+            rec.write({'description': desc})
