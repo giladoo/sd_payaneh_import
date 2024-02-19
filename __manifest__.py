@@ -30,7 +30,7 @@
         'views/input.xml',
         'views/payaneh_input_info.xml',
         'wizard/import_wizard.xml',
-        # 'wizard/clear_wizard.xml',
+        'wizard/clear_wizard.xml',
     ],
     'assets': {
         # 'website.assets_editor': [

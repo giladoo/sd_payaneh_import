@@ -5,71 +5,41 @@
             <field name="name">sd_payaneh_import.clear.wizard.form</field>
             <field name="model">sd_payaneh_import.clear.wizard</field>
             <field name="arch" type="xml">
-                <form js_class="sheet_names">
+                <form >
                     <group>
                         <group>
-                            <field name="project" widget="many2many_tags" options='{"no_open": True, "no_create": True}'/>
-                        </group>
-                        <group>
-<!--                            <field name="start_date" />-->
-<!--                            <field name="calendar" invisible="context.get('lang') != 'fa_IR'"/>-->
-<!--                            <field name="excel_file" filename="excel_file_name" />-->
-<!--                            <field name="excel_file_name" invisible="1" />-->
-
-                            <field name="clear_all" string="Select All" />
-                            <field name="start_date" widget="date" attrs="{'readonly': [('clear_all', '=', True)],
-                            'required': [('clear_all', '=', False)]}" />
-                            <field name="end_date" widget="date" attrs="{'readonly': [('clear_all', '=', True)],
-                            'required': [('clear_all', '=', False)]}" />
-<!--                            <field name="sheet_list" />-->
-<!--                            <div class="row sd_payaneh_import_sheet_names">-->
-<!--                                <div class="col-6">-->
-<!--                                    Sheet-->
-
-<!--                                </div>-->
-<!--                            <div class="col-6 ">-->
-<!--                              <select class="sd_payaneh_import_sheet_select o_input ui-autocomplete-input">-->
-<!--                                <option value="volvo">Volvo</option>-->
-<!--                                <option value="saab">Saab</option>-->
-<!--                                <option value="fiat">Fiat</option>-->
-<!--                                <option value="audi">Audi</option>-->
-<!--                              </select>-->
-<!--                            </div>-->
-
-<!--                            </div>-->
+                            <field name="data_type" />
+                            <field name="count" />
                         </group>
                     </group>
                     <group>
-                        <field name="log_field" class="text-monospace" readonly="1" />
 
                     </group>
-
 
                     <footer>
-                        <button string="Test" name="hse_import_test"  type="object" class="btn btn-success"/>
-                        <button string="Clear" name="hse_import_clear"  type="object" class="btn btn-danger"/>
-                        <button string="Close" name="hse_close"  type="object" class="btn btn-secondary"/>
-<!--                        <button string="Close" special="cancel" class="btn-secondary"/>-->
+                        <button string="Process" name="process_clear"  type="object" class="btn btn-danger"/>
+<!--                        <button string="Close" name="hse_close"  type="object" class="btn btn-secondary"/>-->
+                        <button string="Cancel" special="cancel" class="btn-secondary"/>
                     </footer>
 
                 </form>
             </field>
         </record>
 
-        <record id="clear_wizard_action" model="ir.actions.act_window">
-            <field name="name">HSE Database Clear</field>
+        <record id="sd_payaneh_import_clear_wizard_action" model="ir.actions.act_window">
+            <field name="name">Database clear</field>
             <field name="res_model">sd_payaneh_import.clear.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
 
 
-        <menuitem name="Clear"
+        <menuitem name="clear "
                   sequence="20"
-                  id="clear_wizard_menu"
-                  parent="sd_hse.hse_root_menu"
+                  id="clear_menu"
+                  parent="sd_payaneh_import.import_menu"
                   groups="base.group_system"
-                  action="clear_wizard_action"/>
+                  action="sd_payaneh_import_clear_wizard_action"/>
     </data>
 </odoo>
 
