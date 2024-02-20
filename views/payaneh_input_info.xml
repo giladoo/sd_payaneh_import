@@ -11,9 +11,13 @@
             <xpath expr="//header" position="inside">
                 <button string="Make Done" name="make_done" class="btn btn-danger mx-1"
                         groups="base.group_system" type="object"/>
+                <button string="Make Finished" name="make_finished" class="btn btn-danger mx-1"
+                        groups="base.group_system" type="object"/>
                 <button string="Loading info Date" name="update_loading_info_date" class="btn btn-warning mx-1"
                         groups="base.group_system" type="object"/>
                 <button string="Loading info Date ALL" name="update_loading_info_date_all" class="btn btn-danger mx-1"
+                        groups="base.group_system" type="object"/>
+                <button string="Master Meter" name="set_master_meter" class="btn btn-danger mx-1"
                         groups="base.group_system" type="object"/>
             </xpath>
         </field>

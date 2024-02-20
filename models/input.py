@@ -79,7 +79,7 @@ class SdPaynehImpoertInput(models.Model):
     def process_drivers(self, bunch=False):
         active_ids = self.env.context.get('active_ids')
         if bunch:
-            records = self.search([], limit=2000)
+            records = self.search([], limit=1000)
         else:
             records = self.browse(active_ids)
         drivers_model = self.env['sd_payaneh_nafti.drivers']
