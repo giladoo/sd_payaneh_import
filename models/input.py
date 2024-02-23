@@ -226,7 +226,7 @@ class SdPaynehImpoertInput(models.Model):
                 data.write({'description': f'calculations: {e}'})
                 continue
             try:
-                input_id = payaneh_data_model.create({'document_no': data.document_no,
+                input_id = payaneh_data_model.create({'document_no': int(data.document_no),
                                            'remain_amount_old': data.remain_amount,
                                            'loading_no': data.loading_no,
                                            'request_date': loading_date,

@@ -35,7 +35,7 @@
 
 
         <menuitem name="Import"
-                  sequence="21"
+                  sequence="999"
                   id="import_menu"
                   parent="sd_payaneh_nafti.payaneh_root_menu"
                   groups="base.group_system"/>

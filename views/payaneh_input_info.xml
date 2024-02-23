@@ -23,5 +23,43 @@
         </field>
     </record>
 
+            <record model="ir.ui.view" id="sd_payaneh_nafti_input_info_list_trucks">
+            <field name="name">Input Trucks List</field>
+            <field name="model">sd_payaneh_nafti.input_info</field>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <header>
+<!--                        <button string="drivers" name="drivers_strip" type="object" />-->
+<!--                        <button string="drivers_create" name="drivers_create" type="object" />-->
+                    </header>
+<!--                    <field name="active" invisible="1"/>-->
 
+                    <field name="document_no" />
+                    <field name="request_date" />
+                    <field name="registration_no" />
+
+                    <field name="truck_no" />
+                    <field name="front_container" />
+                    <field name="middle_container" />
+                    <field name="back_container" />
+                    <field name="total" />
+
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_window_input_info_trucks">
+            <field name="name">Input Trucks</field>
+            <field name="res_model">sd_payaneh_nafti.input_info</field>
+            <field name="view_mode">tree</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('sd_payaneh_nafti_input_info_list_trucks')}),
+                ]"/>
+        </record>
+            <menuitem name="Input Trucks"
+                  sequence="40"
+                  id="input_info_menu_trucks"
+                  parent="sd_payaneh_import.import_menu"
+                  action="sd_payaneh_import.action_window_input_info_trucks"/>
 </odoo>
