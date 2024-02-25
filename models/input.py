@@ -162,7 +162,7 @@ class SdPaynehImpoertInput(models.Model):
         else:
             data_model = self.browse(active_ids)
 
-        payaneh_data_model = self.env['sd_payaneh_nafti.input_info']
+        payaneh_data_model = self.env['sd_payaneh_nafti.input_info'].search([])
         payaneh_buyers_model = self.env['sd_payaneh_nafti.buyers'].search([])
         payaneh_destinations_model = self.env['sd_payaneh_nafti.destinations'].search([])
         payaneh_contractors_model = self.env['sd_payaneh_nafti.contractors'].search([])
@@ -179,8 +179,16 @@ class SdPaynehImpoertInput(models.Model):
                 if not data.document_no.isdigit():
                     data.write({'description': f'document_no is not a number: [{data.document_no}]'})
                     continue
-                elif len([rec for rec in input_infos if rec[0] == data.document_no ]) != 0:
-                    data.write({'active': False, 'description': f'document_no is exist: [{data.document_no}]'})
+                info_record = list(filter(lambda r: r.document_no == int(data.document_no), payaneh_data_model))
+                if len(info_record) != 0:
+                    if len(info_record) == 1 and info_record[0].totalizer_start > 0:
+                        data.write({'active': False, 'description': f'document_no is exist: [{data.document_no}]'})
+                    elif len(info_record) == 1 and info_record[0].totalizer_start == 0:
+                        data.write({'description': f'document_no is exist: update needed'})
+
+                    elif len(info_record) > 1:
+                        data.write({'description': f'Multiple of document_no exist: [{data.document_no}]'})
+
                     continue
 
                 if data.loading_date.isdigit():
