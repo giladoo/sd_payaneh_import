@@ -146,7 +146,7 @@ class SdPaynehImpoertInput(models.Model):
             if len(truck) == 1:
                 rec.write({'truck': truck[0], 'description': 'Truck Linked', })
             if len(truck) > 1:
-                rec.write({'description': 'Truck multi', })
+                rec.write({'truck': truck[0], 'description': 'Truck multi', })
             else:
                 rec.write({'description': 'Truck mismatch', })
 
