@@ -217,7 +217,8 @@ class SdPaynehImpoertInput(models.Model):
                     continue
                 elif len(contractor) > 1:
                     data.write({'description': _(f'There are multiple contractor found \n {contractor}')})
-                    continue
+                    contractor = contractor[0]
+                    # continue
 
                 driver = list(filter(lambda d: d[0] == data.driver_m.card_no, drivers))
                 if len(driver) == 0:
