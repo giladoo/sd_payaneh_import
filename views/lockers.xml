@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="sd_payaneh_nafti_lockers_list_inherit" model="ir.ui.view">
+        <field name="name">input_info.inherit.sd_payaneh_nafti_input_info_list_1</field>
+        <field name="model">sd_payaneh_nafti.lockers</field>
+        <field name="inherit_id" ref="sd_payaneh_nafti.sd_payaneh_nafti_lockers_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+
+
+                    <button string="Compair"
+                            name="compair_lockers" class="btn btn-info mx-1"
+                            context="{'buttons': 'compair'}"
+                            groups="base.group_system" type="object"/>
+
+                    <button string="Group"
+                            name="compair_lockers" class="btn btn-info mx-1"
+                            context="{'buttons': 'groups'}"
+                            groups="base.group_system" type="object"/>
+
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>

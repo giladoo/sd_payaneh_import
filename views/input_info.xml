@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="input_info_inherit" model="ir.ui.view">
+        <field name="name">input_info.inherit.sd_payaneh_nafti_input_info_list_1</field>
+        <field name="model">sd_payaneh_nafti.input_info</field>
+        <field name="inherit_id" ref="sd_payaneh_nafti.sd_payaneh_nafti_input_info_list_1"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+
+                <button string="Lockers" name="update_lockers" class="btn btn-info mx-1"
+                        groups="base.group_system" type="object"/>
+
+                <button string="All Lockers" name="update_all_lockers" class="btn btn-info mx-1"
+                        groups="base.group_system" type="object"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

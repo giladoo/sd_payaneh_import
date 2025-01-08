@@ -73,3 +73,43 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
                 new_data['meter_no'] = '0'
                 rec.write(new_data)
 
+
+    def update_lockers(self, active_ids=[]):
+
+        input_locker_list = ['evacuation_box_seal', 'compartment_1', 'compartment_2', 'compartment_3', ]
+        active_ids = active_ids if active_ids else self.env.context.get('active_ids')
+        chunk_list = 500
+        active_ids_lists = [active_ids[i:i + chunk_list] for i in range(0, len(active_ids), chunk_list)]
+        lockers_model = self.env['sd_payaneh_nafti.lockers']
+        old_lockers = lockers_model.search_read([], ['name'])
+        old_lockers_list = list([rec.get('name') for rec in old_lockers])
+        # print(f"\n lockers: {lockers}")
+        for active_id_list in active_ids_lists:
+            input_infos = self.search_read([
+                ('id', 'in', active_id_list),
+                ('evacuation_box_seal', 'not in', ['', ' '])
+            ], ['document_no'] + input_locker_list)
+            # TODO: A report of empty lockers needed.
+
+            print(f"\n len(active_id_list): {len(active_id_list)} input_infos[0]: {input_infos[0]}")
+
+            for input_info in input_infos:
+                for locker_name in input_locker_list:
+                    if input_info.get(locker_name) :
+                    # if input_info.get(locker_name) and input_info.get(locker_name) not in old_lockers_list:
+                        # print(f"\n is NOT: {input_info.get(locker_name)}")
+                        lockers_model.create({
+                            'name': input_info.get(locker_name),
+                            'input_info': input_info.get('id')
+                        })
+                        old_lockers_list.append(input_info.get(locker_name))
+
+    def update_all_lockers(self):
+        lockers = self.env['sd_payaneh_nafti.lockers'].search_read([], ['input_info'],)
+        lockers_ids = list(set([rec.get('input_info')[0] for rec in lockers]))
+        # print(f"\nlockers:\n {lockers}\n lockers_ids: \n{lockers_ids}\n")''
+
+        self.update_lockers(self.search([('id', 'not in', lockers_ids), ('evacuation_box_seal', 'not in', ['', ' ']), ], limit=10000).ids)
+
+
+

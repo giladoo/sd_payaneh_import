@@ -16,7 +16,7 @@
     # for the full list
     'category': 'Service Desk/Service Desk',
     'application': True,
-    'version': '1.1.5',
+    'version': '15.0.1.1.6',
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'web', 'sd_payaneh_nafti'],
@@ -25,6 +25,8 @@
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'views/lockers.xml',
+        'views/input_info.xml',
         'views/views.xml',
         'views/registration.xml',
         'views/input.xml',
