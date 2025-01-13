@@ -16,7 +16,7 @@
     # for the full list
     'category': 'Service Desk/Service Desk',
     'application': True,
-    'version': '15.0.1.1.6',
+    'version': '15.0.1.2.5',
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'web', 'sd_payaneh_nafti'],

@@ -19,6 +19,11 @@
                             context="{'buttons': 'groups'}"
                             groups="base.group_system" type="object"/>
 
+                    <button string="Name"
+                            name="compair_lockers" class="btn btn-info mx-1"
+                            context="{'buttons': 'name'}"
+                            groups="base.group_system" type="object"/>
+
                 </header>
             </xpath>
         </field>

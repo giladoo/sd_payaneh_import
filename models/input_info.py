@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from datetime import  timedelta
-# import random
+from time import time
 
 from odoo import models, fields, api
 from odoo.exceptions import AccessError, MissingError, ValidationError, UserError
@@ -78,20 +78,26 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
 
         input_locker_list = ['evacuation_box_seal', 'compartment_1', 'compartment_2', 'compartment_3', ]
         active_ids = active_ids if active_ids else self.env.context.get('active_ids')
+        limit_time_cpu = self.env['ir.config_parameter'].sudo().get_param('limit_time_cpu')
+
         chunk_list = 500
+        total_time = 0
+        total_count = 0
         active_ids_lists = [active_ids[i:i + chunk_list] for i in range(0, len(active_ids), chunk_list)]
         lockers_model = self.env['sd_payaneh_nafti.lockers']
         old_lockers = lockers_model.search_read([], ['name'])
         old_lockers_list = list([rec.get('name') for rec in old_lockers])
-        # print(f"\n lockers: {lockers}")
+        logging.info(f"\n total active_ids: {len(active_ids)} \n")
+        st = time()
         for active_id_list in active_ids_lists:
+            st1 = time()
             input_infos = self.search_read([
                 ('id', 'in', active_id_list),
                 ('evacuation_box_seal', 'not in', ['', ' '])
             ], ['document_no'] + input_locker_list)
             # TODO: A report of empty lockers needed.
 
-            print(f"\n len(active_id_list): {len(active_id_list)} input_infos[0]: {input_infos[0]}")
+            # logging.info(f"\n len(active_id_list): {len(active_id_list)} input_infos[0]: {input_infos[0]}")
 
             for input_info in input_infos:
                 for locker_name in input_locker_list:
@@ -103,6 +109,11 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
                             'input_info': input_info.get('id')
                         })
                         old_lockers_list.append(input_info.get(locker_name))
+            total_count += len(active_id_list)
+            total_time += round(time() - st1, 0)
+            logging.info(f"total_count: {total_count}  total_time: {total_time} limit_time_cpu: {limit_time_cpu}  {total_time / limit_time_cpu}")
+            if total_time / limit_time_cpu > .85:
+                break
 
     def update_all_lockers(self):
         lockers = self.env['sd_payaneh_nafti.lockers'].search_read([], ['input_info'],)
