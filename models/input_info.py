@@ -78,7 +78,7 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
 
         input_locker_list = ['evacuation_box_seal', 'compartment_1', 'compartment_2', 'compartment_3', ]
         active_ids = active_ids if active_ids else self.env.context.get('active_ids')
-        limit_time_cpu = self.env['ir.config_parameter'].sudo().get_param('limit_time_cpu')
+        limit_time_cpu = self.env['ir.config_parameter'].sudo().get_param('limit_time_cpu') or 180
 
         chunk_list = 500
         total_time = 0
@@ -87,7 +87,7 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
         lockers_model = self.env['sd_payaneh_nafti.lockers']
         old_lockers = lockers_model.search_read([], ['name'])
         old_lockers_list = list([rec.get('name') for rec in old_lockers])
-        logging.info(f"\n total active_ids: {len(active_ids)} \n")
+        logging.info(f"\n [TOTAL] active_ids: {len(active_ids)} \n")
         st = time()
         for active_id_list in active_ids_lists:
             st1 = time()
@@ -111,8 +111,9 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
                         old_lockers_list.append(input_info.get(locker_name))
             total_count += len(active_id_list)
             total_time += round(time() - st1, 0)
-            logging.info(f"total_count: {total_count}  total_time: {total_time} limit_time_cpu: {limit_time_cpu}  {total_time / limit_time_cpu}")
-            if total_time / limit_time_cpu > .85:
+            time_rate = round(total_time / limit_time_cpu, 2)
+            logging.info(f"\n [TOTAL] total_count: {total_count}  total_time: {total_time} limit_time_cpu: {limit_time_cpu} time_rate: {time_rate}")
+            if time_rate > .85:
                 break
 
     def update_all_lockers(self):
