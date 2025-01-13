@@ -112,7 +112,7 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
             total_count += len(active_id_list)
             total_time += round(time() - st1, 0)
             time_rate = round(total_time / limit_time_cpu, 2)
-            logging.info(f"\n [TOTAL] total_count: {total_count}  total_time: {total_time} limit_time_cpu: {limit_time_cpu} time_rate: {time_rate}")
+            logging.info(f"\n [TOTAL] total_count: {total_count}  total_time: {total_time} limit_time_cpu: {limit_time_cpu} time_rate: {time_rate}\n")
             if time_rate > .85:
                 break
 
