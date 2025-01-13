@@ -118,8 +118,8 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
 
     def update_all_lockers(self):
         lockers = self.env['sd_payaneh_nafti.lockers'].search_read([], ['input_info'],)
-        lockers_ids = list(set([rec.get('input_info')[0] for rec in lockers]))
-        # print(f"\nlockers:\n {lockers}\n lockers_ids: \n{lockers_ids}\n")''
+        print(f"\n================= lockers: {len(lockers)} \n {lockers[:5]}\n ")
+        lockers_ids = list(set([rec.get('input_info')[0] for rec in lockers if rec.get('input_info')])) if lockers else []
 
         self.update_lockers(self.search([('id', 'not in', lockers_ids), ('evacuation_box_seal', 'not in', ['', ' ']), ], limit=10000).ids)
 
