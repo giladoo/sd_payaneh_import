@@ -10,6 +10,7 @@ from colorama import Fore
 import random
 import logging
 import traceback
+from icecream import ic
 
 class SdPayanehNaftiInputInfoAmount(models.Model):
     _inherit = 'sd_payaneh_nafti.input_info'
@@ -75,8 +76,18 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
 
 
     def update_lockers(self, active_ids=[]):
+        lockers_model = self.env['sd_payaneh_nafti.lockers']
+        lcoker_types = self.env['sd_payaneh_nafti.locker_type'].search([])
+        locer_types_dict = dict({rec.name: rec.id for rec in lcoker_types})
 
         input_locker_list = ['evacuation_box_seal', 'compartment_1', 'compartment_2', 'compartment_3', ]
+        input_locker_dict = {'evacuation_box_seal': locer_types_dict.get('Evacuation Box'),
+                             'compartment_1': locer_types_dict.get('Compartment 1'),
+                             'compartment_2': locer_types_dict.get('Compartment 2'),
+                             'compartment_3': locer_types_dict.get('Compartment 3'), }
+        # ic(locer_types_dict)
+
+        # return
         active_ids = active_ids if active_ids else self.env.context.get('active_ids')
         limit_time_cpu = self.env['ir.config_parameter'].sudo().get_param('limit_time_cpu') or 180
 
@@ -84,9 +95,8 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
         total_time = 0
         total_count = 0
         active_ids_lists = [active_ids[i:i + chunk_list] for i in range(0, len(active_ids), chunk_list)]
-        lockers_model = self.env['sd_payaneh_nafti.lockers']
-        old_lockers = lockers_model.search_read([], ['name'])
-        old_lockers_list = list([rec.get('name') for rec in old_lockers])
+        # old_lockers = lockers_model.search_read([], ['locker_no'])
+        # old_lockers_list = list([rec.get('locker_no').upper() for rec in old_lockers])
         logging.info(f"\n [TOTAL] active_ids: {len(active_ids)} \n")
         st = time()
         for active_id_list in active_ids_lists:
@@ -102,13 +112,16 @@ class SdPayanehNaftiInputInfoAmount(models.Model):
             for input_info in input_infos:
                 for locker_name in input_locker_list:
                     if input_info.get(locker_name) :
-                    # if input_info.get(locker_name) and input_info.get(locker_name) not in old_lockers_list:
-                        # print(f"\n is NOT: {input_info.get(locker_name)}")
+                        locker_no = (input_info.get(locker_name)).upper()
+                        locker_exists = lockers_model.search_count([('locker_no', '=', locker_no), ('input_info', '=', input_info.get('id'))])
+                        if locker_exists:
+                            continue
                         lockers_model.create({
-                            'name': input_info.get(locker_name),
-                            'input_info': input_info.get('id')
+                            'locker_no': locker_no,
+                            'input_info': input_info.get('id'),
+                            'locker_type': input_locker_dict.get(locker_name),
                         })
-                        old_lockers_list.append(input_info.get(locker_name))
+                        # old_lockers_list.append(input_info.get(locker_name))
             total_count += len(active_id_list)
             total_time += round(time() - st1, 0)
             time_rate = round(total_time / limit_time_cpu, 2)
